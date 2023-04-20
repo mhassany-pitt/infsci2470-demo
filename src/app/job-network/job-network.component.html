@@ -1,1 +1,8 @@
-<div #container></div>
+<div class="relative p-4 h-full">
+  <div #container class="h-full"></div>
+  <div *ngIf="color" class="absolute bottom-2 right-3 flex items-center text-xs">
+    <span class="font-bold">Occupation Type:</span>
+    <span class="ml-2"><span [ngStyle]="{ 'color': color.Physcial }">●</span> Physcial</span>
+    <span class="ml-2"><span [ngStyle]="{ 'color': color.Cognitive }">●</span> Cognitive</span>
+  </div>
+</div>

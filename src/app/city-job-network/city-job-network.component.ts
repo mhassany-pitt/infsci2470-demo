@@ -3,17 +3,19 @@ import * as d3 from 'd3';
 import { randomNetwork } from '../random-network';
 
 @Component({
-  selector: 'app-job-network',
-  templateUrl: './job-network.component.html',
-  styleUrls: ['./job-network.component.less']
+  selector: 'app-city-job-network',
+  templateUrl: './city-job-network.component.html',
+  styleUrls: ['./city-job-network.component.less']
 })
-export class JobNetworkComponent implements OnInit {
+export class CityJobNetworkComponent implements OnInit {
   @ViewChild('container', { static: true }) container: ElementRef = null as any;
-  color: any;
 
   async ngOnInit() {
     this.container.nativeElement.append(await this.network(
-      randomNetwork(50, Math.round(100 + Math.random() * 300))
+      randomNetwork(
+        Math.round(25 + Math.random() * 25),
+        Math.round(100 + Math.random() * 100),
+      )
     ));
   }
 
@@ -29,10 +31,6 @@ export class JobNetworkComponent implements OnInit {
     ])).map(link => ({ id: link }));
     const types = Array.from(new Set(links.map(d => d.type)));
     const color = d3.scaleOrdinal(types, ['#ffc109', '#b44a9f']);
-    this.color = {
-      Physcial: color('Physcial'),
-      Cognitive: color('Cognitive'),
-    };
 
     const simulation = d3.forceSimulation(nodes)
       .force("link", d3.forceLink(links).id((d: any) => d.id))
@@ -62,7 +60,7 @@ export class JobNetworkComponent implements OnInit {
       .attr("d", "M0,-5L10,0L0,5");
 
     // -- links
-    const svgLinks = svg.append("g")
+    const link = svg.append("g")
       .attr("fill", "none")
       .attr("stroke-width", 0.25)
       .selectAll("path")
@@ -71,7 +69,7 @@ export class JobNetworkComponent implements OnInit {
       .attr("stroke", d => color(d.type));
 
     // -- nodes
-    const svgNodes = svg.append("g")
+    const node = svg.append("g")
       .attr("stroke-linecap", "round")
       .attr("stroke-linejoin", "round")
       .selectAll("g")
@@ -84,7 +82,6 @@ export class JobNetworkComponent implements OnInit {
         return d3.drag().on("start", dragstarted).on("drag", dragged).on("end", dragended);
       })(simulation))
       .append("circle")
-      .attr('data-node', (d: any) => d.id)
       .attr("stroke-width", 0)
       .attr("fill", (d: any) => color(map[d.id]))
       .attr("r", (d) => 4 + Math.random() * 4);
@@ -100,8 +97,8 @@ export class JobNetworkComponent implements OnInit {
     //   .attr("stroke-width", 3);
 
     simulation.on("tick", () => {
-      svgLinks.attr("d", (d: any) => `M${d.source.x},${d.source.y} A0,0 0 0,1 ${d.target.x},${d.target.y}`);
-      svgNodes.attr("transform", (d: any) => `translate(${d.x},${d.y})`);
+      link.attr("d", (d: any) => `M${d.source.x},${d.source.y} A0,0 0 0,1 ${d.target.x},${d.target.y}`);
+      node.attr("transform", (d: any) => `translate(${d.x},${d.y})`);
     });
 
     // invalidation.then(() => simulation.stop());
@@ -120,29 +117,6 @@ export class JobNetworkComponent implements OnInit {
     //   .text((d) => `${d.substring(0, 1).toUpperCase()}${d.substring(1)}`)
     //   .style("font-size", "22px")
     //   .attr("alignment-baseline", "middle");
-
-    const tooltip = d3.select("body")
-      .append("div")
-      .style('position', 'absolute')
-      .style("opacity", 0)
-      .style('background-color', 'lightgray')
-      .style('padding', '5px 10px')
-      .style('border-radius', '10px')
-      .style('font-size', '0.85rem');
-
-    svgNodes.on("mouseover", (event, d: any) => {
-      console.log(d);
-      tooltip.transition()
-        .duration(200)
-        .style("opacity", 0.9);
-      tooltip.html(`Skill: ${d.id}`)
-        .style("left", (event.pageX + 10) + "px")
-        .style("top", (event.pageY - 28) + "px");
-    }).on("mouseout", (event, d) => {
-      tooltip.transition()
-        .duration(200)
-        .style("opacity", 0);
-    });
 
     return svg.node();
   }

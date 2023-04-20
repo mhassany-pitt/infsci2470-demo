@@ -1,8 +1,8 @@
-<nav class="bg-gray-700 shadow-xl">
+<nav class="bg-indigo-700 shadow-xl">
   <div class="container mx-auto px-4">
     <div class="flex items-center justify-between h-16">
       <div class="flex items-center">
-        <a href="#" class="text-white font-bold text-lg">Website Name</a>
+        <a href="#" class="text-white font-bold text-lg">Skillscape</a>
       </div>
 
       <!-- 
@@ -14,11 +14,11 @@
   </div>
 </nav>
 
-<div class="py-12 w-fit mx-auto">
-  <div class="grid grid-cols-3">
-    <app-us-map class="col-span-2 m-2 p-4 rounded-lg shadow-lg bg-gray-50"></app-us-map>
-    <app-job-network class="m-2 p-4 rounded-lg shadow-lg bg-gray-50"></app-job-network>
-    <app-compare class="col-span-2 m-2 p-4 rounded-lg shadow-lg bg-gray-50"></app-compare>
-    <app-legend class="m-2 p-4 rounded-lg shadow-lg bg-gray-50"></app-legend>
+<div class="container mx-auto py-8">
+  <div class="grid grid-cols-2 gap-4">
+    <app-job-network class="col-span-1 rounded-lg shadow-md border border-gray-100 bg-gray-50" style="max-height: 60vh;"></app-job-network>
+    <app-us-map class="col-span-1 rounded-lg shadow-md border border-gray-100 bg-gray-50" style="max-height: 60vh;"></app-us-map>
+    <app-compare class="col-span-2 rounded-lg shadow-md border border-gray-100 bg-gray-50"></app-compare>
+    <!-- <app-legend class="col-span-2 rounded-lg shadow-md border border-gray-100 bg-gray-50"></app-legend> -->
   </div>
 </div>

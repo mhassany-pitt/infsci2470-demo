@@ -1,8 +1,19 @@
-<div class="flex justify-center gap-1">
-  <div *ngFor="let city of ['Pittsburgh', 'Manhatan', 'Silicon Valley']" class="flex flex-col w-48 text-center">
-    <span class="mb-2">{{ city }}</span>
-    <span class="text-gray-400 text-xs">
-      [TODO: some charts/info]
-    </span>
-  </div>
+<div class="flex justify-center gap-1 overflow-hidden p-4">
+  <ng-container *ngFor="let city of cities; let i = index">
+    <span *ngIf="i > 0" class="border mx-2"></span>
+    <div class="flex flex-col text-center items-center">
+      <app-city-job-network class="-my-8 h-48"></app-city-job-network>
+      <span class="mb-2 font-bold">{{ city.label }}</span>
+      <div class="flex items-center gap-2">
+        <div class="flex flex-col text-xs text-left font-light">
+          <span class="font-normal">Research Assistant,</span>
+          <span [ngStyle]="{ color: city.color }">
+            {{ city.embeddedness }} Embeddedness
+          </span>
+          <span>in {{ city.label }}</span>
+        </div>
+        <app-city-radial-score [color]="city.color" class="w-24"></app-city-radial-score>
+      </div>
+    </div>
+  </ng-container>
 </div>
