@@ -12,6 +12,15 @@ export class JobNetworkComponent implements OnInit {
   legendTypes: string[] = null as any;
   legendColorNames: { [color: string]: string } = null as any;
 
+  search = false;
+  searchKey = "";
+  filtered: { id: string, title: string }[] = [];
+  filter($event: any) {
+    this.filtered = this.searchKey.length >= 3
+      ? Object.values(this.app.occupations).filter(area => area.title.toLowerCase().indexOf(this.searchKey) >= 0)
+      : [];
+  }
+
   constructor(public app: AppService) { }
 
   async ngOnInit() {
@@ -138,10 +147,14 @@ export class JobNetworkComponent implements OnInit {
       tooltip.transition().duration(200).style('opacity', 0);
     }).on('click', (event, d: any) => {
       tooltip.transition().duration(200).style('opacity', 0);
-      this.app.setSelectedOccupation(this.app.occupations[d.id]);
-      this.app.reloadComparisons();
+      this.select(d.id);
     });
 
     this.container.nativeElement.append(svg.node());
+  }
+
+  select(id: string) {
+    this.app.setSelectedOccupation(this.app.occupations[id]);
+    this.app.reloadComparisons();
   }
 }

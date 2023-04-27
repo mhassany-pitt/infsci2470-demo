@@ -11,6 +11,15 @@ import * as d3 from 'd3';
 export class USMapComponent implements OnInit {
   @ViewChild('container', { static: true }) container: ElementRef = null as any;
 
+  search = false;
+  searchKey = "";
+  filtered: { id: string, name: string }[] = [];
+  filter($event: any) {
+    this.filtered = this.searchKey.length >= 3
+      ? Object.values(this.app.areas).filter(area => area.name.toLowerCase().indexOf(this.searchKey) >= 0)
+      : [];
+  }
+
   constructor(public app: AppService) { }
 
   async ngOnInit() {
@@ -88,10 +97,14 @@ export class USMapComponent implements OnInit {
         }
       } else {
         tooltip.transition().duration(200).style('opacity', 0);
-        this.app.setSelectedArea(this.app.areas[d.properties.GEOID]);
+        this.select(d.properties.GEOID);
       }
     });
 
     this.container.nativeElement.append(svg.node());
+  }
+
+  select(id: string) {
+    this.app.setSelectedArea(this.app.areas[id]);
   }
 }

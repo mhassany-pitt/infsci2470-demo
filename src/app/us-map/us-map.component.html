@@ -6,6 +6,25 @@
     </span>
     <span class="text-gray-300 hover:text-red-500 cursor-pointer gg-close" (click)="app.setSelectedArea(null)"></span>
   </div>
+  <span class="absolute top-3 right-3 flex flex-col">
+    <div class="flex items-center justify-end gap-2">
+      <input *ngIf="search" [(ngModel)]="searchKey" class="border border-gray-200 px-1 text-sm"
+        placeholder="Search for a metropolitan area" size="30" (ngModelChange)="filter($event)" />
+      <span *ngIf="search" class="gg-close text-gray-300 hover:text-red-500 cursor-pointer"
+        (click)="search = false"></span>
+      <div *ngIf="!search" style="padding: 7px 0;">
+        <span class="gg-search text-gray-300 hover:text-black cursor-pointer" (click)="search = true;"></span>
+      </div>
+    </div>
+    <div *ngIf="filtered.length" class="bg-gray-200 px-2 pt-1 rounded-md text-xs flex flex-col"
+      style="max-height: 10rem; overflow-y: auto;">
+      <span *ngFor="let area of filtered" class="cursor-pointer hover:font-bold mb-1"
+        (click)="select(area.id); searchKey = ''; filtered = []; search = false;">
+        {{ area.name }}
+      </span>
+    </div>
+  </span>
 
   <div #container class="h-full p-4"></div>
+
 </div>

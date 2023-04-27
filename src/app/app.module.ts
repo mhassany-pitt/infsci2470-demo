@@ -9,6 +9,7 @@ import { CityJobNetworkComponent } from './city-job-network/city-job-network.com
 import { CompareComponent } from './compare/compare.component';
 import { LegendComponent } from './legend/legend.component';
 import { CityRadialScoreComponent } from './city-radial-score/city-radial-score.component';
+import { FormsModule } from '@angular/forms';
 
 @NgModule({
   declarations: [
@@ -22,7 +23,8 @@ import { CityRadialScoreComponent } from './city-radial-score/city-radial-score.
   ],
   imports: [
     BrowserModule,
-    AppRoutingModule
+    AppRoutingModule,
+    FormsModule,
   ],
   providers: [],
   bootstrap: [AppComponent]
