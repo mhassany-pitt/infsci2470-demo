@@ -1,5 +1,6 @@
 import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import * as d3 from 'd3';
+import { AppService } from '../app.service';
 
 @Component({
   selector: 'app-city-radial-score',
@@ -7,15 +8,16 @@ import * as d3 from 'd3';
   styleUrls: ['./city-radial-score.component.less']
 })
 export class CityRadialScoreComponent implements OnInit {
-  @Input() color = 'green';
-
+  @Input('area') area: any;
   @ViewChild('container', { static: true }) container: ElementRef = null as any;
 
+  constructor(public app: AppService) { }
+
   async ngOnInit() {
-    this.container.nativeElement.append(await this.map());
+    this.prepare();
   }
 
-  async map() {
+  async prepare() {
     const radius = 240;
     const center = radius / 2;
     const distance = radius / 3;
@@ -25,20 +27,34 @@ export class CityRadialScoreComponent implements OnInit {
       .attr('height', '100%')
       .attr('width', '100%');
 
+    const occupations = this.app.areaOccupationEmbds[this.area.id];
+    const top10LinkedOccupations = Object.keys(occupations)
+      .filter(occupation => occupation != this.app.selectedOccupation.id && occupations[occupation] > 0)
+      .slice(0, 10);
+
+    const conns: { [id: string]: any } = {};
+    this.app.links.forEach(link => {
+      conns[`${link.source}--${link.target}`] = 0;
+      conns[`${link.target}--${link.source}`] = 0;
+    });
+
+    const nodes = top10LinkedOccupations.map((occupation, i) => ({
+      id: occupation,
+      x: center + distance * Math.cos(2 * Math.PI * i / 10),
+      y: center + distance * Math.sin(2 * Math.PI * i / 10),
+      r: 5 + occupations[occupation] * 5,
+      fill: "gray",
+    }));
+
+    const links = nodes.filter(link => Math.random() > 0.5);
+
     const central = {
+      id: this.app.selectedOccupation.id,
       x: center,
       y: center,
       r: 10,
-      fill: this.color
+      fill: links.length > 5 ? 'green' : links.length > 2 ? 'orange' : 'red',
     };
-
-    const outers = d3.range(10).map((d, i) => ({
-      x: center + distance * Math.cos(2 * Math.PI * i / 10),
-      y: center + distance * Math.sin(2 * Math.PI * i / 10),
-      r: 5 + Math.random() * 10,
-      fill: "gray",
-    }));
-    const links = outers.filter(o => Math.random() > .5);
 
     svg.selectAll("line")
       .data(links)
@@ -51,8 +67,8 @@ export class CityRadialScoreComponent implements OnInit {
       .attr("stroke", d => d.fill)
       .attr("stroke-width", d => d.r / 2);
 
-    svg.selectAll("circle")
-      .data([...outers, central])
+    const svgNodes = svg.selectAll("circle")
+      .data([...nodes, central])
       .enter()
       .append("circle")
       .attr("cx", d => d.x)
@@ -60,6 +76,34 @@ export class CityRadialScoreComponent implements OnInit {
       .attr("r", d => d.r)
       .attr("fill", d => d.fill);
 
-    return svg.node();
+    const tooltip = d3.select('body')
+      .append('div')
+      .style('position', 'absolute')
+      .style('opacity', 0)
+      .style('background-color', 'lightgray')
+      .style('padding', '10px')
+      .style('border-radius', '10px')
+      .style('font-size', '0.85rem')
+      .style('pointer-events', 'none');
+
+    svgNodes.on('mouseover', (event, d: any) => {
+      tooltip.transition().duration(200).style('opacity', 1);
+      const occupation = this.app.occupations[d.id];
+      tooltip.html(`
+          <div style="max-width: 320px;">
+            <div><b>${occupation.title}</b></div>
+            <hr style="margin: 0.25rem 0;"/>
+            <div style="line-height: 1rem">
+              <small>${occupation.description}</small>
+            </div>
+          </div>
+        `)
+        .style('left', (event.pageX + 10) + 'px')
+        .style('top', (event.pageY - 28) + 'px');
+    }).on('mouseout', (event, d) => {
+      tooltip.transition().duration(200).style('opacity', 0);
+    });
+
+    this.container.nativeElement.append(svg.node());
   }
 }

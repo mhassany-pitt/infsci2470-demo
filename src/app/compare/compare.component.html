@@ -1,19 +1,53 @@
-<div class="flex justify-center gap-1 overflow-hidden p-4">
-  <ng-container *ngFor="let city of cities; let i = index">
-    <span *ngIf="i > 0" class="border mx-2"></span>
-    <div class="flex flex-col text-center items-center">
-      <app-city-job-network class="-my-8 h-48"></app-city-job-network>
-      <span class="mb-2 font-bold">{{ city.label }}</span>
-      <div class="flex items-center gap-2">
-        <div class="flex flex-col text-xs text-left font-light">
-          <span class="font-normal">Research Assistant,</span>
-          <span [ngStyle]="{ color: city.color }">
-            {{ city.embeddedness }} Embeddedness
+<div class="flex justify-center gap-1 overflow-hidden p-4 overflow-x-auto">
+  <span *ngIf="!app.compare" class="italic text-gray-700">
+    loading ...
+  </span>
+  <ng-container *ngIf="app.compare">
+    <ng-container *ngIf="app.selectedOccupation && app.selectedAreas.length >= 2; else howToNoteEl">
+      <ng-container *ngFor="let area of app.selectedAreas; let i = index">
+        <span *ngIf="i > 0" class="border mx-2"></span>
+        <div class="flex flex-col text-center items-center w-48">
+          <app-city-job-network [area]="area" class="h-48 -my-4"></app-city-job-network>
+          <app-city-radial-score [area]="area" class="h-32"></app-city-radial-score>
+          <span class="flex items-center justify-center mt-2">
+            <span class="font-bold text-sm">{{ area.name }}</span>
+            <span class="text-gray-300 hover:text-red-500 cursor-pointer gg-close" style="width: 22px;"
+              (click)="removeSelectedArea(area)"></span>
           </span>
-          <span>in {{ city.label }}</span>
         </div>
-        <app-city-radial-score [color]="city.color" class="w-24"></app-city-radial-score>
+      </ng-container>
+    </ng-container>
+
+    <ng-template #howToNoteEl>
+      <div class="flex flex-col">
+        <div *ngIf="!app.selectedOccupation || app.selectedAreas.length < 2" class=" text-gray-500 text-xs">
+          <div class="font-bold text-center w-full">-- To Start the Comparison --</div>
+          <div>
+            <span class="mr-1" style="font-size: 0.65rem;">{{ app.selectedOccupation ? '🟢' : '🔴' }}</span>
+            <span>From the occupations network graph</span>
+            <span class="underline italic mx-1">select an occupation</span>
+            <span class="italic">(click on a circle)</span>
+          </div>
+          <ng-container *ngIf="app.selectedOccupation">
+            <div class="mt-2 ml-4">
+              <span>→ Occupation Selected: </span>
+              <span class="font-bold">{{ app.selectedOccupation.title }}</span>
+            </div>
+          </ng-container>
+
+          <div class="mt-2">
+            <span class="mr-1" style="font-size: 0.65rem;">{{ app.selectedAreas.length >= 2 ? '🟢' : '🔴' }}</span>
+            <span class="underline italic mr-1">and at least two areas from the US Map</span>
+            <span class="italic">(while pressing shift key click on a colored area)</span>
+          </div>
+          <ng-container *ngIf="app.selectedAreas.length">
+            <div class="my-2 ml-4">
+              <span>→ Areas Selected: </span>
+              <span class="font-bold">{{ selectedAreaNames }}</span>
+            </div>
+          </ng-container>
+        </div>
       </div>
-    </div>
+    </ng-template>
   </ng-container>
 </div>

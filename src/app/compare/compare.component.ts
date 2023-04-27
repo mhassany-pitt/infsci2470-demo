@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { AppService } from '../app.service';
 
 @Component({
   selector: 'app-compare',
@@ -6,9 +7,16 @@ import { Component } from '@angular/core';
   styleUrls: ['./compare.component.less']
 })
 export class CompareComponent {
-  cities = [
-    { label: 'Pittsburgh, PA (2019)', embeddedness: 'High', color: 'green' },
-    { label: 'Manhatan, NY (2020)', embeddedness: 'Medium', color: 'darkorange' },
-    { label: 'Silicon Valley, CA (2018)', embeddedness: 'Low', color: 'red' },
-  ]
+  constructor(public app: AppService) { }
+
+  get selectedAreaNames() {
+    return this.app.selectedAreas.length ? this.app.selectedAreas.map(a => a.name).join(', ') : 'no area';
+  }
+
+  removeSelectedArea(area: any) {
+    const index = this.app.selectedAreas.indexOf(area);
+    if (index >= 0) {
+      this.app.selectedAreas.splice(index, 1);
+    }
+  }
 }

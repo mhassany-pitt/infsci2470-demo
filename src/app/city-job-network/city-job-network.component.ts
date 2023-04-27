@@ -1,6 +1,7 @@
-import { Component, ElementRef, HostListener, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, HostListener, Input, OnInit, ViewChild } from '@angular/core';
 import * as d3 from 'd3';
 import { randomNetwork } from '../random-network';
+import { AppService } from '../app.service';
 
 @Component({
   selector: 'app-city-job-network',
@@ -8,29 +9,41 @@ import { randomNetwork } from '../random-network';
   styleUrls: ['./city-job-network.component.less']
 })
 export class CityJobNetworkComponent implements OnInit {
+  @Input('area') area: any;
+
   @ViewChild('container', { static: true }) container: ElementRef = null as any;
 
+  constructor(public app: AppService) { }
+
   async ngOnInit() {
-    this.container.nativeElement.append(await this.network(
-      randomNetwork(
-        Math.round(25 + Math.random() * 25),
-        Math.round(100 + Math.random() * 100),
-      )
-    ));
+    this.prepare();
   }
 
-  async network(links: { source: string, target: string, type: string }[]) {
-    const map: any = {};
+  async prepare() {
+    const occupations = this.app.areaOccupationEmbds[this.area.id];
+    const filtered = Object.keys(occupations).filter(occupation => occupations[occupation] > 0);
+
+    const links = this.app.links
+      .filter(link => filtered.indexOf(link.source) > -1
+        || filtered.indexOf(link.target) > -1)
+      .map(link => {
+        // create a true copy
+        const { source, target, type } = link;
+        return { source, target, type };
+      });
+
+    const typesMap: any = {};
     links.forEach(l => {
-      map[l.source] = l.type;
-      map[l.target] = l.type;
+      typesMap[l.source] = l.type;
+      typesMap[l.target] = l.type;
     });
     const nodes: any = Array.from(new Set([
       ...links.map(d => d.source),
       ...links.map(d => d.target)
     ])).map(link => ({ id: link }));
-    const types = Array.from(new Set(links.map(d => d.type)));
-    const color = d3.scaleOrdinal(types, ['#ffc109', '#b44a9f']);
+
+    const types = this.app.occupationTypes;
+    const color = d3.scaleOrdinal(types, ['#ffa500', '#b44a9f']);
 
     const simulation = d3.forceSimulation(nodes)
       .force("link", d3.forceLink(links).id((d: any) => d.id))
@@ -38,14 +51,15 @@ export class CityJobNetworkComponent implements OnInit {
       .force("x", d3.forceX())
       .force("y", d3.forceY());
 
-    const width = 640, height = 480;
+    const width = 320, height = 240;
     const svg = d3.create("svg")
       .attr("viewBox", [-width / 2, -height / 2, width, height])
       .attr('height', '100%')
       .attr('width', '100%');
 
     // -- per-type markers, as they don't inherit styles.
-    svg.append("defs").selectAll("marker")
+    svg.append("defs")
+      .selectAll("marker")
       .data(types)
       .join("marker")
       .attr("id", d => `arrow-${d}`)
@@ -60,7 +74,7 @@ export class CityJobNetworkComponent implements OnInit {
       .attr("d", "M0,-5L10,0L0,5");
 
     // -- links
-    const link = svg.append("g")
+    const svgLinks = svg.append("g")
       .attr("fill", "none")
       .attr("stroke-width", 0.25)
       .selectAll("path")
@@ -69,7 +83,7 @@ export class CityJobNetworkComponent implements OnInit {
       .attr("stroke", d => color(d.type));
 
     // -- nodes
-    const node = svg.append("g")
+    const svgNodes = svg.append("g")
       .attr("stroke-linecap", "round")
       .attr("stroke-linejoin", "round")
       .selectAll("g")
@@ -83,41 +97,43 @@ export class CityJobNetworkComponent implements OnInit {
       })(simulation))
       .append("circle")
       .attr("stroke-width", 0)
-      .attr("fill", (d: any) => color(map[d.id]))
-      .attr("r", (d) => 4 + Math.random() * 4);
-
-    // // -- node labels
-    // node.append("text")
-    //   .attr("x", 8)
-    //   .attr("y", "0.31em")
-    //   .text((d: any) => d.id)
-    //   .clone(true).lower()
-    //   .attr("fill", "none")
-    //   .attr("stroke", "white")
-    //   .attr("stroke-width", 3);
+      .attr("fill", (d: any) => color(typesMap[d.id]))
+      .attr('r', (d: any) => 5 + occupations[d.id])
+      .style('cursor', 'pointer');
 
     simulation.on("tick", () => {
-      link.attr("d", (d: any) => `M${d.source.x},${d.source.y} A0,0 0 0,1 ${d.target.x},${d.target.y}`);
-      node.attr("transform", (d: any) => `translate(${d.x},${d.y})`);
+      svgLinks.attr("d", (d: any) => `M${d.source.x},${d.source.y} A0,0 0 0,1 ${d.target.x},${d.target.y}`);
+      svgNodes.attr("transform", (d: any) => `translate(${d.x},${d.y})`);
     });
 
-    // invalidation.then(() => simulation.stop());
+    const tooltip = d3.select('body')
+      .append('div')
+      .style('position', 'absolute')
+      .style('opacity', 0)
+      .style('background-color', 'lightgray')
+      .style('padding', '10px')
+      .style('border-radius', '10px')
+      .style('font-size', '0.85rem')
+      .style('pointer-events', 'none');
 
-    // svg.selectAll('legend-circles')
-    //   .data(types).enter().append("circle")
-    //   .attr("cx", -width / 2 + 10)
-    //   .attr("cy", (d) => -height / 2 + 10 + types.indexOf(d) * 24)
-    //   .attr("r", 8)
-    //   .style("fill", d => color(d));
+    svgNodes.on('mouseover', (event, d: any) => {
+      tooltip.transition().duration(200).style('opacity', 1);
+      const occupation = this.app.occupations[d.id];
+      tooltip.html(`
+          <div style="max-width: 320px;">
+            <div><b>${occupation.title}</b></div>
+            <hr style="margin: 0.25rem 0;"/>
+            <div style="line-height: 1rem">
+              <small>${occupation.description}</small>
+            </div>
+          </div>
+        `)
+        .style('left', (event.pageX + 10) + 'px')
+        .style('top', (event.pageY - 28) + 'px');
+    }).on('mouseout', (event, d) => {
+      tooltip.transition().duration(200).style('opacity', 0);
+    });
 
-    // svg.selectAll('legend-labels')
-    //   .data(types).enter().append("text")
-    //   .attr("x", 2 - width / 2 + 24)
-    //   .attr("y", (d) => -height / 2 + 14 + types.indexOf(d) * 24)
-    //   .text((d) => `${d.substring(0, 1).toUpperCase()}${d.substring(1)}`)
-    //   .style("font-size", "22px")
-    //   .attr("alignment-baseline", "middle");
-
-    return svg.node();
+    this.container.nativeElement.append(svg.node());
   }
 }

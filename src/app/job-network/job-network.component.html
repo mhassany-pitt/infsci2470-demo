@@ -1,8 +1,18 @@
-<div class="relative p-4 h-full">
+<div class="relative h-full">
+  <div *ngIf="app.selectedOccupation" class="absolute top-2 left-2 flex items-center bg-gray-200 rounded-lg px-2 py-0">
+    <span [title]="app.selectedOccupation.description" class="text-sm font-bold">
+      {{ app.selectedOccupation.title }}
+    </span>
+    <span class="text-gray-300 hover:text-red-500 cursor-pointer gg-close"
+      (click)="app.setSelectedOccupation(null)"></span>
+  </div>
+
   <div #container class="h-full"></div>
-  <div *ngIf="color" class="absolute bottom-2 right-3 flex items-center text-xs">
+  <div *ngIf="legendColorNames" class="absolute bottom-2 right-3 flex items-center text-xs">
     <span class="font-bold">Occupation Type:</span>
-    <span class="ml-2"><span [ngStyle]="{ 'color': color.Physcial }">●</span> Physcial</span>
-    <span class="ml-2"><span [ngStyle]="{ 'color': color.Cognitive }">●</span> Cognitive</span>
+    <span *ngFor="let type of legendTypes" class="ml-2">
+      <span [ngStyle]="{ 'color': legendColorNames[type] }">●</span>
+      <span> {{ type }}</span>
+    </span>
   </div>
 </div>

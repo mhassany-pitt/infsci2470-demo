@@ -1,1 +1,11 @@
-<div #container class="h-full p-4"></div>
+<div class="relative h-full">
+  <div *ngIf="app.selectedArea && app.selectedAreas.length == 0"
+    class="absolute top-2 left-2 flex items-center bg-gray-200 rounded-lg px-2 py-0">
+    <span class="text-sm font-bold">
+      {{ app.selectedArea.name }}
+    </span>
+    <span class="text-gray-300 hover:text-red-500 cursor-pointer gg-close" (click)="app.setSelectedArea(null)"></span>
+  </div>
+
+  <div #container class="h-full p-4"></div>
+</div>
