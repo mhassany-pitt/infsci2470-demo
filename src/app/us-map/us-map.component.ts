@@ -13,11 +13,22 @@ export class USMapComponent implements OnInit {
 
   search = false;
   searchKey = "";
+  searchIndex = 0;
   filtered: { id: string, name: string }[] = [];
   filter($event: any) {
-    this.filtered = this.searchKey.length >= 3
-      ? Object.values(this.app.areas).filter(area => area.name.toLowerCase().indexOf(this.searchKey) >= 0)
-      : [];
+    if ($event.key == 'ArrowUp') {
+      this.searchIndex = this.searchIndex > 0 ? this.searchIndex - 1 : Math.max(0, this.filtered.length - 1);
+    } else if ($event.key == 'ArrowDown') {
+      this.searchIndex = this.searchIndex < this.filtered.length - 1 ? this.searchIndex + 1 : 0;
+    } else if ($event.key == 'Enter') {
+      if (this.searchIndex < this.filtered.length) {
+        this.select(this.filtered[this.searchIndex].id);
+      }
+    } else {
+      this.filtered = this.searchKey.length >= 3
+        ? Object.values(this.app.areas).filter(area => area.name.toLowerCase().indexOf(this.searchKey) >= 0)
+        : [];
+    }
   }
 
   constructor(public app: AppService) { }
@@ -106,5 +117,8 @@ export class USMapComponent implements OnInit {
 
   select(id: string) {
     this.app.setSelectedArea(this.app.areas[id]);
+    this.searchKey = '';
+    this.filtered = [];
+    this.search = false;
   }
 }
