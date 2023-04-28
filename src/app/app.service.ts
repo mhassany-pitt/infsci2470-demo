@@ -62,11 +62,11 @@ export class AppService {
   }
 
   private async loadCounties() {
-    this.counties = await d3.json('/assets/us-counties-10m.json');
+    this.counties = await d3.json('assets/us-counties-10m.json');
   }
 
   private async loadCBSA() {
-    this.cbsa = await d3.json('/assets/tl_2015_us_cbsa.json');
+    this.cbsa = await d3.json('assets/tl_2015_us_cbsa.json');
     this.cbsa.objects.areas.geometries.forEach((geometry: any) =>
       this.areas[geometry.properties.GEOID] = {
         id: geometry.properties.GEOID,
@@ -75,7 +75,7 @@ export class AppService {
   }
 
   private async loadOnet() {
-    (await d3.csv('/assets/onet-occupations.csv'))
+    (await d3.csv('assets/onet-occupations.csv'))
       .forEach((occupation: any) => this.occupations[occupation.code] = {
         id: occupation.code,
         title: occupation.title,
